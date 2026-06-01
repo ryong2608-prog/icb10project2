@@ -1,4 +1,4 @@
-# === Python 기본 컴파일/캐시 파일 ===
+# === Python 기본 컴파일/캐시 파일 파일 ===
 __pycache__/
 *.pyc
 *.pyo
@@ -18,6 +18,9 @@ sdist/
 var/
 wheels/
 share/python-wheels/
+
+
+
 
 # === 가상 환경 (Virtual Environments) ===
 .venv/
