@@ -82,3 +82,7 @@ accounts.json
 .idea/
 .DS_Store
 Thumbs.db
+
+# === 모든 숨김 파일 및 폴더 제외 (단, .gitignore 제외) ===
+.*
+!.gitignore
