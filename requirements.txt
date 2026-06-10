@@ -1,0 +1,1 @@
+-r naver_api_app/requirements.txt
