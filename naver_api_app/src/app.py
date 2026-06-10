@@ -10,7 +10,6 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
-from dotenv import load_dotenv
 
 # 모듈 임포트
 from api import NaverAPIClient
@@ -35,7 +34,22 @@ def _load_naver_credentials() -> tuple[str, str]:
 
     return os.getenv("NAVER_CLIENT_ID", "").strip(), os.getenv("NAVER_CLIENT_SECRET", "").strip()
 
-# .env를 여러 후보 경로에서 로드합니다.
+# .env를 여러 후보 경로에서 직접 로드합니다.
+def _load_env_file(path: Path) -> None:
+    if not path.exists():
+        return
+
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("'").strip('"')
+        if key and key not in os.environ:
+            os.environ[key] = value
+
 APP_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = APP_ROOT.parent
 ENV_CANDIDATES = [
@@ -44,8 +58,7 @@ ENV_CANDIDATES = [
     REPO_ROOT / ".env",
 ]
 for env_path in ENV_CANDIDATES:
-    if env_path.exists():
-        load_dotenv(env_path, override=False)
+    _load_env_file(env_path)
 
 CLIENT_ID, CLIENT_SECRET = _load_naver_credentials()
 
