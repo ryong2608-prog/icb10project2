@@ -69,13 +69,26 @@ datasets/
 # 예외 처리: 만약 데이터 폴더 안의 구조는 유지하고 싶다면 아래 주석을 해제할 수 있습니다.
 # !data/.gitkeep
 
-# === 환경 변수 및 보안 정보 (Credential) ===
+# === 환경 변수 및 로컬 설정 파일 ===
 .env
 .env.*
+*.local
+*.secret
+*.secrets
+*.ini
+*.cfg
+*.toml
+*.yaml
+*.yml
+*.config
+*.settings
 secrets.json
 accounts.json
 *.pem
 *.key
+*.crt
+*.cert
+.streamlit/
 
 # === IDE 설정 및 시스템 파일 ===
 .vscode/

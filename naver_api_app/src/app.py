@@ -3,14 +3,33 @@
 네이버 API 통합 분석 Streamlit 대시보드 메인 애플리케이션
 """
 
+import os
+from pathlib import Path
+
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
+from dotenv import load_dotenv
 
 # 모듈 임포트
 from api import NaverAPIClient
 import utils
+
+# .env를 여러 후보 경로에서 로드합니다.
+APP_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = APP_ROOT.parent
+ENV_CANDIDATES = [
+    Path.cwd() / ".env",
+    APP_ROOT / ".env",
+    REPO_ROOT / ".env",
+]
+for env_path in ENV_CANDIDATES:
+    if env_path.exists():
+        load_dotenv(env_path, override=False)
+
+CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "").strip()
+CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET", "").strip()
 
 # --- 페이지 기본 설정 및 디자인 테마 주입 ---
 st.set_page_config(
@@ -115,10 +134,6 @@ def load_shop_data(client_id: str, client_secret: str, query: str, sort: str) ->
     return client.get_shop_search(query, display=100, sort=sort)
 
 # --- 사이드바 설정 및 입력 조건 ---
-st.sidebar.markdown("### 🔑 API 인증 정보")
-client_id_input = st.sidebar.text_input("Naver Client ID", value="", type="password", help="네이버 개발자 센터에서 발급받은 클라이언트 아이디를 입력하세요.")
-client_secret_input = st.sidebar.text_input("Naver Client Secret", value="", type="password", help="네이버 개발자 센터에서 발급받은 클라이언트 시크릿을 입력하세요.")
-
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🧭 대시보드 메뉴")
 menu = st.sidebar.selectbox(
@@ -173,23 +188,13 @@ ages_tuple = tuple(age_list) if age_list else None
 
 # --- 메인 대시보드 영역 ---
 
-# API Credentials 유효성 검사
-if not client_id_input or not client_secret_input:
+if not CLIENT_ID or not CLIENT_SECRET:
     st.markdown('<div class="main-title">Naver API 통합 데이터 대시보드</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-title">네이버 오픈 API 실시간 트렌드 및 채널별 분석 도구</div>', unsafe_allow_html=True)
-    
-    st.warning("⚠️ 화면 왼쪽 메뉴(Sidebar)에서 **Naver Client ID**와 **Naver Client Secret**을 입력해 주세요.")
-    
-    st.markdown("""
-    ### 📌 시작하기 전 준비사항
-    1. **네이버 개발자 센터** ([https://developers.naver.com/](https://developers.naver.com/))에 접속합니다.
-    2. 애플리케이션을 등록한 뒤 **Client ID**와 **Client Secret**을 발급받습니다.
-    3. 애플리케이션의 **API 설정**에서 아래의 서비스 권한을 등록했는지 확인합니다:
-        - **검색** (블로그, 뉴스, 카페, 쇼핑용)
-        - **데이터랩(검색어트렌드)** (통합 검색어 트렌드용)
-        - **데이터랩(쇼핑인사이트)** (쇼핑 트렌드용)
-    4. 발급받은 API Key를 좌측 입력창에 기재하면 즉시 분석 대시보드가 활성화됩니다.
-    """)
+    st.error(
+        "`.env` 파일에서 `NAVER_CLIENT_ID`와 `NAVER_CLIENT_SECRET`을 읽지 못했습니다. "
+        f"확인한 경로: {', '.join(str(path) for path in ENV_CANDIDATES)}"
+    )
     st.stop()
 
 # API 클라이언트 초기화 및 데이터 로드 영역
@@ -207,7 +212,7 @@ if menu == "통합 검색어 트렌드 (Datalab)":
         
     try:
         df_trend = load_search_trend_data(
-            client_id_input, client_secret_input,
+            CLIENT_ID, CLIENT_SECRET,
             start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"),
             time_unit, keywords_input, device_val, gender_val, ages_tuple
         )
@@ -283,7 +288,7 @@ elif menu == "쇼핑 트렌드 (쇼핑인사이트)":
     
     try:
         df_shop_trend = load_shopping_trend_data(
-            client_id_input, client_secret_input,
+            CLIENT_ID, CLIENT_SECRET,
             start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"),
             time_unit, selected_cat_id, keywords_input, device_val, gender_val, ages_tuple
         )
@@ -341,7 +346,7 @@ elif menu == "블로그 검색 분석":
         keyword = keywords_list[idx]
         with tab:
             try:
-                df_blog = load_blog_data(client_id_input, client_secret_input, keyword, sort_option.split()[0])
+                df_blog = load_blog_data(CLIENT_ID, CLIENT_SECRET, keyword, sort_option.split()[0])
                 
                 if df_blog.empty:
                     st.info(f"ℹ️ '{keyword}'에 대한 블로그 검색 결과가 없습니다.")
@@ -393,7 +398,7 @@ elif menu == "카페글 검색 분석":
         keyword = keywords_list[idx]
         with tab:
             try:
-                df_cafe = load_cafe_data(client_id_input, client_secret_input, keyword, sort_option.split()[0])
+                df_cafe = load_cafe_data(CLIENT_ID, CLIENT_SECRET, keyword, sort_option.split()[0])
                 
                 if df_cafe.empty:
                     st.info(f"ℹ️ '{keyword}'에 대한 카페글 검색 결과가 없습니다.")
@@ -441,7 +446,7 @@ elif menu == "뉴스 검색 분석":
         keyword = keywords_list[idx]
         with tab:
             try:
-                df_news = load_news_data(client_id_input, client_secret_input, keyword, sort_option.split()[0])
+                df_news = load_news_data(CLIENT_ID, CLIENT_SECRET, keyword, sort_option.split()[0])
                 
                 if df_news.empty:
                     st.info(f"ℹ️ '{keyword}'에 대한 뉴스 검색 결과가 없습니다.")
@@ -536,7 +541,7 @@ elif menu == "쇼핑 검색 분석":
         keyword = keywords_list[idx]
         with tab:
             try:
-                df_shop = load_shop_data(client_id_input, client_secret_input, keyword, sort_option.split()[0])
+                df_shop = load_shop_data(CLIENT_ID, CLIENT_SECRET, keyword, sort_option.split()[0])
                 
                 if df_shop.empty:
                     st.info(f"ℹ️ '{keyword}'에 대한 쇼핑 검색 결과가 없습니다.")
