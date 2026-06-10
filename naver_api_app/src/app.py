@@ -16,6 +16,25 @@ from dotenv import load_dotenv
 from api import NaverAPIClient
 import utils
 
+# Streamlit 설정(secrets)에서 먼저 읽고, 없으면 로컬 .env를 보조로 사용합니다.
+def _load_naver_credentials() -> tuple[str, str]:
+    try:
+        if "NAVER_CLIENT_ID" in st.secrets and "NAVER_CLIENT_SECRET" in st.secrets:
+            return (
+                str(st.secrets["NAVER_CLIENT_ID"]).strip(),
+                str(st.secrets["NAVER_CLIENT_SECRET"]).strip(),
+            )
+
+        naver_secret = st.secrets.get("naver", {})
+        client_id = str(naver_secret.get("client_id", "")).strip()
+        client_secret = str(naver_secret.get("client_secret", "")).strip()
+        if client_id and client_secret:
+            return client_id, client_secret
+    except Exception:
+        pass
+
+    return os.getenv("NAVER_CLIENT_ID", "").strip(), os.getenv("NAVER_CLIENT_SECRET", "").strip()
+
 # .env를 여러 후보 경로에서 로드합니다.
 APP_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = APP_ROOT.parent
@@ -28,8 +47,7 @@ for env_path in ENV_CANDIDATES:
     if env_path.exists():
         load_dotenv(env_path, override=False)
 
-CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "").strip()
-CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET", "").strip()
+CLIENT_ID, CLIENT_SECRET = _load_naver_credentials()
 
 # --- 페이지 기본 설정 및 디자인 테마 주입 ---
 st.set_page_config(
@@ -192,8 +210,9 @@ if not CLIENT_ID or not CLIENT_SECRET:
     st.markdown('<div class="main-title">Naver API 통합 데이터 대시보드</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-title">네이버 오픈 API 실시간 트렌드 및 채널별 분석 도구</div>', unsafe_allow_html=True)
     st.error(
-        "`.env` 파일에서 `NAVER_CLIENT_ID`와 `NAVER_CLIENT_SECRET`을 읽지 못했습니다. "
-        f"확인한 경로: {', '.join(str(path) for path in ENV_CANDIDATES)}"
+        "`st.secrets` 또는 `.env`에서 `NAVER_CLIENT_ID`와 `NAVER_CLIENT_SECRET`을 읽지 못했습니다. "
+        "Streamlit Cloud에서는 App > Settings > Secrets에 값을 넣고, 로컬에서는 "
+        f"확인한 경로({', '.join(str(path) for path in ENV_CANDIDATES)}) 중 하나에 `.env`를 두세요."
     )
     st.stop()
 

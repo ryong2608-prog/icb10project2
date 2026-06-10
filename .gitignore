@@ -88,7 +88,6 @@ accounts.json
 *.key
 *.crt
 *.cert
-.streamlit/
 
 # === IDE 설정 및 시스템 파일 ===
 .vscode/
@@ -99,3 +98,7 @@ Thumbs.db
 # === 모든 숨김 파일 및 폴더 제외 (단, .gitignore 제외) ===
 .*
 !.gitignore
+!naver_api_app/.streamlit/
+!naver_api_app/.streamlit/config.toml
+!naver_api_app/.streamlit/secrets.example.toml
+naver_api_app/.streamlit/secrets.toml
