@@ -1,3 +1,31 @@
+# 📊 네이버 API 통합 데이터 대시보드
+
+이 프로젝트는 네이버의 다양한 API(검색어 트렌드, 쇼핑 등)를 활용하여 키워드 분석 및 마케팅 인사이트를 제공하는 Streamlit 기반의 대시보드 애플리케이션입니다.
+
+## 🚀 서비스 배포 주소
+- **Streamlit App**: [바로가기](https://ryong2608-prog-icb10project2-naver-api-appsrcapp-z32nsh.streamlit.app/) (https://ryong2608-prog-icb10project2-naver-api-appsrcapp-z32nsh.streamlit.app/)
+
+## 🛠 주요 작업 내역 (Changelog)
+
+### [2026-06-13]
+- **Git Hook 자동화 설정**:
+  - `git commit`이 성공한 후, 자동으로 현재 브랜치를 원격 저장소(`origin`)에 push 하도록 `post-commit` 훅 설정 완료.
+  - 관련 스크립트: [.git/hooks/post-commit](file:///Users/yonghee/Documents/icb10proj2/.git/hooks/post-commit)
+
+### [2026-06-10]
+- **Streamlit Cloud 배포 최적화**:
+  - Streamlit Cloud 환경에서 원활히 배포될 수 있도록 루트 경로에 `requirements.txt` 추가 및 종속성 구성 완료.
+  - Streamlit Cloud의 secrets 환경 변수(`NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`) 지원을 위한 데이터 로딩부 개선.
+  - 불필요한 `dotenv` 디펜던시 제거 및 예외 처리 코드 추가.
+
+### [2026-06-08]
+- **네이버 API 통합 분석 Streamlit 대시보드 구현**:
+  - 네이버 API 연동 클라이언트 개발 (`naver_api_app/src/api.py`).
+  - 데이터 분석 결과 시각화 및 UI 레이아웃 구현 (`naver_api_app/src/app.py`).
+  - 시각화 보조 유틸리티 구성 (`naver_api_app/src/utils.py`).
+
+---
+
 ## STEP 0. 팀 구성 및 협업 환경 세팅
 
 ### 슬랙 세팅
